@@ -4,7 +4,6 @@ services:
     name: bolta-khata-backend
     runtime: python
     region: oregon
-    plan: free
     rootDir: backend
     buildCommand: pip install -r requirements-prod.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
@@ -30,7 +29,6 @@ services:
   - type: web
     name: bolta-khata-frontend
     runtime: static
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
