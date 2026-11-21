@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAppStore } from './store/appStore'
+import { SplashScreen } from './components/SplashScreen'
 import { Login } from './pages/Login'
 import { Setup } from './pages/Setup'
 import { Home } from './pages/Home'
@@ -25,6 +26,25 @@ function ProtectedRoute({ children }) {
 }
 
 export function App() {
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('no_splash')) {
+      return false
+    }
+    return true
+  })
+
+  useEffect(() => {
+    if (!showSplash) return
+    const timer = setTimeout(() => {
+      setShowSplash(false)
+    }, 3000)
+    return () => clearTimeout(timer)
+  }, [showSplash])
+
+  if (showSplash) {
+    return <SplashScreen />
+  }
+
   return (
     <BrowserRouter>
       <Routes>
