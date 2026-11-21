@@ -100,14 +100,14 @@ async def interpret(transcript: Transcript, context: Context) -> Interpretation:
 
     # e. If LLM failed or not available
     if llm_output is None or not llm_output.operations:
-        from app.ai.fast_path import _parse_single_transaction_phrase
-        parsed_fallback = _parse_single_transaction_phrase(transcript.text, context)
+        from app.ai.fast_path import parse_indic_or_fallback
+        parsed_fallback = parse_indic_or_fallback(transcript.text, context)
         if parsed_fallback:
-            return Interpretation(
-                operations=[parsed_fallback],
-                source="fallback",
-                language=transcript.language or shop_fallback_lang,
-            )
+            if transcript.language:
+                parsed_fallback.language = transcript.language
+            elif shop_fallback_lang and not parsed_fallback.language:
+                parsed_fallback.language = shop_fallback_lang
+            return parsed_fallback
 
         logger.info(f"interpret source=fallback model={model_name} latency_ms={duration_ms}")
         op = Operation(intent="UNKNOWN", confidence=0.0)

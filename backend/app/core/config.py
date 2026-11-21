@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file="backend/.env",
+        env_file=(".env", "backend/.env"),
         env_file_encoding="utf-8",
         extra="ignore"
     )
@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     JWT_SECRET: str = "default-insecure-jwt-secret-key-change-in-prod"
     JWT_EXPIRE_DAYS: int = 30
     USE_STUB_SPEECH: bool = True
-    USE_STUB_AI: bool = True
+    USE_STUB_AI: bool = False
     STUB_TRANSCRIPT: str = "Ramesh Sharma ka 340 udhaar"
     GNANI_API_KEY: str = ""
     STT_MODEL: str = "prisma-v3.0"

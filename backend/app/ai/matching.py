@@ -6,8 +6,42 @@ from app.schemas.contracts import CustomerRef, Candidate
 
 HONORIFICS = {
     "ji", "jee", "bhai", "bhaiya", "bhaiyya", "sahab", "saab", "sir", "madam",
-    "didi", "aunty", "uncle", "anna", "akka", "avare", "wale", "wala", "waale", "wali"
+    "didi", "aunty", "uncle", "anna", "akka", "avare", "wale", "wala", "waale", "wali",
+    "जी", "भाई", "भैया", "साहब", "सर", "मैडम", "दीदी", "वाले", "वाला", "वाली"
 }
+
+DEV_TO_LATIN = {
+    'क': 'k', 'ख': 'kh', 'ग': 'g', 'घ': 'gh', 'ङ': 'ng',
+    'च': 'ch', 'छ': 'chh', 'ज': 'j', 'झ': 'jh', 'ञ': 'ny',
+    'ट': 't', 'ठ': 'th', 'ड': 'd', 'ढ': 'dh', 'ण': 'n',
+    'त': 't', 'थ': 'th', 'द': 'd', 'ध': 'dh', 'न': 'n',
+    'प': 'p', 'फ': 'ph', 'ब': 'b', 'भ': 'bh', 'म': 'm',
+    'य': 'y', 'र': 'r', 'ल': 'l', 'व': 'v', 'श': 'sh', 'ष': 'sh', 'स': 's', 'ह': 'h',
+    'ा': 'a', 'ि': 'i', 'ी': 'ee', 'ु': 'u', 'ू': 'oo', 'े': 'e', 'ै': 'ai', 'ो': 'o', 'ौ': 'au',
+    'ं': 'n', '्': '', 'अ': 'a', 'आ': 'aa', 'इ': 'i', 'ई': 'ee', 'उ': 'u', 'ऊ': 'oo', 'ए': 'e', 'ऐ': 'ai', 'ओ': 'o', 'औ': 'au',
+    'ಶ': 'sh', 'ರ': 'r', 'ಮ': 'm', 'ೇ': 'e', 'ಷ': 'sh', 'ಸ': 's', 'ು': 'u', 'ಅ': 'a', 'ಿ': 'i', 'ತ': 't'
+}
+
+COMMON_INDIC_NAMES = {
+    "रमेश": "ramesh",
+    "शर्मा": "sharma",
+    "गुप्ता": "gupta",
+    "सुरेश": "suresh",
+    "अमित": "amit",
+    "रಮೇಶ್": "ramesh",
+    "ಸುರೇಶ್": "suresh",
+}
+
+
+def _indic_to_latin(text: str) -> str:
+    words = text.split()
+    converted_words = []
+    for w in words:
+        if w in COMMON_INDIC_NAMES:
+            converted_words.append(COMMON_INDIC_NAMES[w])
+        else:
+            converted_words.append(''.join(DEV_TO_LATIN.get(c, c) for c in w))
+    return ' '.join(converted_words)
 
 
 def normalize_name(name: str) -> str:
@@ -15,8 +49,11 @@ def normalize_name(name: str) -> str:
         return ""
     # Unicode NFC
     s = unicodedata.normalize("NFC", name).lower()
+    # Transliterate Indic scripts if present
+    if any((0x0900 <= ord(c) <= 0x097F) or (0x0C80 <= ord(c) <= 0x0CFF) for c in s):
+        s = _indic_to_latin(s)
     # Remove punctuation
-    s = re.sub(r"[^\w\s\u0900-\u097F\u0C80-\u0CFF]", " ", s)
+    s = re.sub(r"[^\w\s]", " ", s)
     tokens = s.split()
     filtered = [t for t in tokens if t not in HONORIFICS]
     return " ".join(filtered).strip()
