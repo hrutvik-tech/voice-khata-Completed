@@ -1,6 +1,16 @@
 import { useAppStore } from '../store/appStore'
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const getBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== '') {
+    return import.meta.env.VITE_API_URL
+  }
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return ''
+  }
+  return 'http://localhost:8000'
+}
+
+const BASE_URL = getBaseUrl()
 
 async function request(path, options = {}) {
   const token = useAppStore.getState().token

@@ -187,7 +187,15 @@ export function useVoice() {
   useEffect(() => {
     if (!token) return
 
-    const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8000'
+    const getWsUrl = () => {
+      if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL
+      if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+        return `${proto}//${window.location.host}`
+      }
+      return 'ws://localhost:8000'
+    }
+    const wsUrl = getWsUrl()
     const socket = new VoiceSocket({
       url: wsUrl,
       token,
