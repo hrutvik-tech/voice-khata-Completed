@@ -1,6 +1,11 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
+import { useAppStore } from '../store/appStore'
+import { t } from '../i18n/translations'
 
 export function TransactionEntry({ entry }) {
+  const language = useAppStore((s) => s.language)
+
   if (!entry) return null
 
   const isCredit = entry.direction === 'credit'
@@ -26,76 +31,85 @@ export function TransactionEntry({ entry }) {
 
   return (
     <div
-      className={`p-3 my-2 rounded-xl border flex items-center justify-between transition-all ${
+      className={`p-3 my-2 rounded-2xl border transition-all ${
         isUndone
-          ? 'bg-slate-900/60 border-slate-800 opacity-60'
+          ? 'bg-slate-50 border-slate-200 opacity-60'
           : isCredit
-          ? 'bg-slate-900/90 border-emerald-900/40'
-          : 'bg-slate-900/90 border-blue-900/40'
-      }`}
+          ? 'bg-white border-slate-200 hover:border-rose-200 shadow-xs'
+          : 'bg-white border-slate-200 hover:border-emerald-200 shadow-xs'
+      } flex items-center justify-between`}
     >
-      <div className="flex-1">
+      <div className="flex-1 min-w-0 pr-2">
         <div className="flex items-center gap-1.5 flex-wrap">
           {entry.customer_name && (
-            <span className="text-xs font-bold text-white mr-1">
-              {entry.customer_name}
-            </span>
+            entry.customer_id ? (
+              <Link
+                to={`/customers/${entry.customer_id}`}
+                className="text-xs font-bold text-slate-900 hover:text-emerald-700 hover:underline mr-1 truncate max-w-[130px]"
+              >
+                {entry.customer_name}
+              </Link>
+            ) : (
+              <span className="text-xs font-bold text-slate-900 mr-1 truncate max-w-[130px]">
+                {entry.customer_name}
+              </span>
+            )
           )}
 
           <span
-            className={`text-[11px] px-2 py-0.5 rounded font-semibold ${
+            className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
               isCredit
-                ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/60'
-                : 'bg-blue-950 text-blue-400 border border-blue-800/60'
+                ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
             }`}
           >
-            {isCredit ? 'उधार (Credit)' : 'जमा (Payment)'}
+            {isCredit ? t('creditBadge', language) : t('paymentBadge', language)}
           </span>
 
           {entry.language && (
-            <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">
+            <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
               {entry.language}
             </span>
           )}
 
           {isOffline && (
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-800/40">
-              Offline
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-semibold">
+              {t('statusOffline', language)}
             </span>
           )}
 
           {isAmended && (
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800/40">
-              संशोधित
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-semibold">
+              {t('statusAmended', language)}
             </span>
           )}
 
           {isUndone && (
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-rose-950 text-rose-300 border border-rose-800/40">
-              रद्द
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-600 font-semibold">
+              {t('statusUndone', language)}
             </span>
           )}
         </div>
 
-        <div className="mt-1 text-[11px] text-slate-400">
-          <span>{entry.business_date || 'आज'}</span>
-          {timeStr && <span className="ml-1.5">• {timeStr}</span>}
+        <div className="mt-1 text-[11px] text-slate-500 flex items-center gap-1">
+          <span>{entry.business_date || t('todayOnly', language)}</span>
+          {timeStr && <span>• {timeStr}</span>}
         </div>
       </div>
 
-      <div className="text-right ml-2">
+      <div className="text-right shrink-0">
         {oldAmountRupees && (
-          <div className="text-[11px] text-slate-500 line-through">
+          <div className="text-[11px] text-slate-400 line-through">
             ₹{oldAmountRupees}
           </div>
         )}
         <div
-          className={`text-base font-extrabold ${
+          className={`text-sm sm:text-base font-extrabold ${
             isUndone
-              ? 'text-slate-500 line-through'
+              ? 'text-slate-400 line-through'
               : isCredit
-              ? 'text-emerald-400'
-              : 'text-blue-400'
+              ? 'text-rose-600'
+              : 'text-emerald-600'
           }`}
         >
           {isCredit ? '+' : '-'}₹{amountRupees}

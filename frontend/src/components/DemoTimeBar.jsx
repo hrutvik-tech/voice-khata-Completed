@@ -20,26 +20,26 @@ export function DemoTimeBar() {
   ]
 
   return (
-    <div className="bg-slate-800/80 border-b border-slate-700/60 px-3 py-1.5 text-xs text-slate-300 flex items-center justify-between">
+    <div className="bg-purple-50 border-b border-purple-200 px-3 py-1.5 text-xs text-purple-900 flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-purple-400"></span>
-        <span className="font-mono text-purple-300 font-semibold">Demo Mode:</span>
-        <span className="font-mono">{demoTime ? new Date(demoTime).toLocaleString('en-IN') : 'Live Clock'}</span>
+        <span className="w-2 h-2 rounded-full bg-purple-600"></span>
+        <span className="font-mono text-purple-700 font-bold">Demo Mode:</span>
+        <span className="font-mono text-slate-700">{demoTime ? new Date(demoTime).toLocaleString('en-IN') : 'Live Clock'}</span>
       </div>
 
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="px-2 py-0.5 rounded bg-purple-600/40 hover:bg-purple-600/60 text-purple-200 text-[11px] cursor-pointer"
+          className="px-2 py-0.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-800 text-[11px] font-semibold cursor-pointer border border-purple-300"
         >
-          {isOpen ? 'Close Time Controls' : 'Change Demo Time'}
+          {isOpen ? 'Close' : 'Change Demo Time'}
         </button>
       </div>
 
       {isOpen && (
-        <div className="absolute top-10 right-4 z-50 bg-slate-900 border border-purple-500/40 rounded-xl p-3 shadow-2xl w-72 text-slate-200">
-          <p className="font-semibold text-xs text-purple-300 mb-2">Select Virtual Test Time:</p>
+        <div className="absolute top-10 right-4 z-50 bg-white border border-purple-200 rounded-2xl p-3 shadow-xl w-72 text-slate-800 animate-fade-in">
+          <p className="font-bold text-xs text-purple-900 mb-2">Select Virtual Test Time:</p>
           <div className="space-y-1 mb-3">
             {presets.map((p, idx) => (
               <button
@@ -49,10 +49,10 @@ export function DemoTimeBar() {
                   setDemoTime(p.value)
                   setIsOpen(false)
                 }}
-                className={`w-full text-left px-2.5 py-1.5 rounded text-xs transition ${
+                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer ${
                   demoTime === p.value
-                    ? 'bg-purple-600 text-white font-medium'
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                    ? 'bg-purple-600 text-white font-bold'
+                    : 'bg-slate-50 hover:bg-purple-50 text-slate-700 border border-slate-200/60'
                 }`}
               >
                 {p.label}
@@ -60,26 +60,30 @@ export function DemoTimeBar() {
             ))}
           </div>
 
-          <div className="pt-2 border-t border-slate-800">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (customTime) {
+                setDemoTime(customTime)
+                setIsOpen(false)
+              }
+            }}
+            className="flex gap-1"
+          >
             <input
-              type="datetime-local"
+              type="text"
+              placeholder="ISO (YYYY-MM-DDTHH:MM:SS+05:30)"
               value={customTime}
               onChange={(e) => setCustomTime(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 mb-2"
+              className="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-[11px] text-slate-900 focus:outline-none focus:border-purple-500"
             />
             <button
-              type="button"
-              onClick={() => {
-                if (customTime) {
-                  setDemoTime(new Date(customTime).toISOString())
-                  setIsOpen(false)
-                }
-              }}
-              className="w-full bg-purple-600 hover:bg-purple-500 text-white py-1 rounded text-xs font-semibold"
+              type="submit"
+              className="px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold cursor-pointer"
             >
-              Apply Custom Time
+              Set
             </button>
-          </div>
+          </form>
         </div>
       )}
     </div>

@@ -1,16 +1,20 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useAppStore } from '../store/appStore'
 import { useVoice } from '../voice/useVoice'
+import { Header } from '../components/Header'
+import { Navbar } from '../components/Navbar'
 import { MicOrb } from '../components/MicOrb'
 import { TransactionEntry } from '../components/TransactionEntry'
 import { VoiceQuestion } from '../components/VoiceQuestion'
 import { OfflineBanner } from '../components/OfflineBanner'
 import { DemoTimeBar } from '../components/DemoTimeBar'
 import { api } from '../api/rest'
+import { t } from '../i18n/translations'
 
 export function Home() {
   const shop = useAppStore((s) => s.shop)
+  const language = useAppStore((s) => s.language)
   const summary = useAppStore((s) => s.summary)
   const setSummary = useAppStore((s) => s.setSummary)
   const recentEntries = useAppStore((s) => s.recentEntries)
@@ -46,15 +50,37 @@ export function Home() {
   const creditRupees = ((summary.credit_paise || 0) / 100).toLocaleString('en-IN')
   const paymentRupees = ((summary.payment_paise || 0) / 100).toLocaleString('en-IN')
 
-  // Practical sample voice sentences for shopkeepers
-  const quickVoiceChips = [
-    'रमेश शर्मा का 340 उधार',
-    'सुरेश का 200 जमा',
-    'रमेश का कुल बाकी?',
-    'नहीं, 430',
-    'पिछला हटाओ',
-    'आज कितना उधार गया?',
-  ]
+  // Localized sample voice sentences for shopkeepers
+  const quickVoiceChips = useMemo(() => {
+    if (language === 'kn') {
+      return [
+        'ರಮೇಶ್ ಶರ್ಮಾ 340 ಸಾಲ',
+        'ಸುರೇಶ್ 200 ಜಮಾ',
+        'ರಮೇಶ್ ಒಟ್ಟು ಬಾಕಿ ಎಷ್ಟು?',
+        'ಇಲ್ಲ, 430',
+        'ಹಿಂದಿನದು ತೆಗೆದುಹಾಕು',
+        'ಇವತ್ತಿನ ಲೆಕ್ಕ',
+      ]
+    }
+    if (language === 'en') {
+      return [
+        'Ramesh Sharma 340 credit',
+        'Suresh paid 200',
+        'How much does Ramesh owe?',
+        'No, 430',
+        'Undo last',
+        "Today's summary",
+      ]
+    }
+    return [
+      'रमेश शर्मा का 340 उधार',
+      'सुरेश का 200 जमा',
+      'रमेश का कुल बाकी?',
+      'नहीं, 430',
+      'पिछला हटाओ',
+      'आज का हिसाब',
+    ]
+  }, [language])
 
   const handleActivateClick = async () => {
     setActivating(true)
@@ -74,52 +100,76 @@ export function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col pb-24 max-w-md mx-auto relative border-x border-slate-900 shadow-xl">
-      {/* Offline & Demo Time Banners */}
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col pb-24 max-w-md mx-auto relative border-x border-slate-200 shadow-xl">
+      {/* Offline & Demo Banners */}
       <OfflineBanner />
       <DemoTimeBar />
 
-      {/* Top Header Bar — Realistic Kirana Style */}
-      <header className="px-4 pt-4 pb-3 flex items-center justify-between border-b border-slate-800 bg-slate-900 sticky top-0 z-30">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-            🎙️
-          </div>
-          <div>
-            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wide block">
-              {shop?.shop_name || 'शर्मा किराना स्टोर'}
-            </span>
-            <h1 className="text-sm font-bold text-white flex items-center gap-1">
-              नमस्ते, {shop?.owner_name || 'दुकानदार जी'}
-            </h1>
-          </div>
-        </div>
-
-        <Link
-          to="/profile"
-          aria-label="Shop Profile"
-          className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </Link>
-      </header>
+      {/* Top Header Bar with QR Code & Language Switcher */}
+      <Header />
 
       {/* Main Content Area */}
       <main className="flex-1 px-4 py-3 flex flex-col space-y-3">
-        {/* Activation Banner if Audio Not Active */}
+        {/* Prominent BOLTA KHATA Hero Banner */}
+        <section className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 rounded-3xl p-5 text-white shadow-lg shadow-emerald-900/10 relative overflow-hidden">
+          <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/40 text-[10px] font-bold tracking-wider uppercase border border-emerald-300/30">
+                Voice AI Khata
+              </span>
+              <span className="text-emerald-200 text-xs">✨ Kirana Ledger</span>
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-mono">
+              {t('brandName', language)}
+            </h1>
+
+            <p className="text-xs sm:text-sm font-semibold text-emerald-100 mt-1">
+              "{t('brandTagline', language)}"
+            </p>
+
+            <p className="text-[11px] text-emerald-100/80 mt-1.5 leading-relaxed max-w-xs">
+              {t('heroDesc', language)}
+            </p>
+
+            {/* Quick Hero Action Links */}
+            <div className="mt-4 flex items-center gap-2 pt-2 border-t border-emerald-500/30">
+              <Link
+                to="/history"
+                className="px-3 py-1.5 bg-white text-emerald-800 hover:bg-emerald-50 rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{t('navHistory', language)}</span>
+              </Link>
+
+              <Link
+                to="/customers"
+                className="px-3 py-1.5 bg-emerald-800/80 hover:bg-emerald-800 text-white border border-emerald-400/30 rounded-xl text-xs font-bold transition flex items-center gap-1"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span>{t('khataTitle', language)}</span>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Audio Activation Banner if Microphone uninitialized */}
         {!audioActive && (
-          <div className="p-3.5 rounded-xl bg-slate-900 border border-emerald-600/40 text-center shadow-md">
-            <h3 className="text-xs font-bold text-white mb-1">
-              माइक और आवाज़ चालू करें (Activate Voice)
+          <div className="p-4 rounded-2xl bg-white border border-emerald-200 text-center shadow-xs">
+            <h3 className="text-xs font-bold text-slate-900 mb-1">
+              {t('activateVoiceTitle', language)}
             </h3>
-            <p className="text-[11px] text-slate-300 mb-2.5">
-              बोलकर लेन-देन जोड़ने के लिए एक बार बटन दबाएँ
+            <p className="text-[11px] text-slate-500 mb-2.5">
+              {t('activateVoiceDesc', language)}
             </p>
             {micError && (
-              <p className="text-[11px] text-amber-300 mb-2 bg-amber-950/60 p-1.5 rounded border border-amber-800/40">
+              <p className="text-[11px] text-amber-800 mb-2 bg-amber-50 p-1.5 rounded-lg border border-amber-200 font-medium">
                 {micError}
               </p>
             )}
@@ -127,15 +177,15 @@ export function Home() {
               type="button"
               onClick={handleActivateClick}
               disabled={activating}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 px-3 rounded-lg transition active:scale-98 cursor-pointer disabled:opacity-50"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 px-3 rounded-xl transition shadow-xs active:scale-98 cursor-pointer disabled:opacity-50"
             >
-              {activating ? 'सक्रिय कर रहे हैं...' : 'माइक शुरू करें'}
+              {activating ? t('activatingBtn', language) : t('activateVoiceBtn', language)}
             </button>
           </div>
         )}
 
         {/* Center: Microphone Section */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+        <section className="bg-white border border-slate-200 rounded-3xl p-4 text-center shadow-xs">
           <MicOrb
             state={orbState}
             onClick={handleOrbClick}
@@ -144,16 +194,16 @@ export function Home() {
           />
 
           <div className="mt-2 text-center">
-            <span className="text-[11px] text-slate-400 font-mono bg-slate-950 px-2.5 py-1 rounded-full border border-slate-800">
-              वेक शब्द: <strong className="text-emerald-400">"Suno Munshi"</strong>
+            <span className="text-[11px] text-slate-500 font-mono bg-slate-50 px-3 py-1 rounded-full border border-slate-200 font-medium inline-block">
+              {t('wakeWordHint', language)} <strong className="text-emerald-700 font-bold">"Suno Munshi"</strong>
             </span>
           </div>
-        </div>
+        </section>
 
         {/* Quick Voice Command Chips */}
         <div>
-          <span className="text-[11px] font-semibold text-slate-400 mb-1.5 block">
-            सुझाव (टैप करें या बोलें):
+          <span className="text-[11px] font-bold text-slate-600 mb-1.5 block">
+            {t('suggestionsTitle', language)}
           </span>
           <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
             {quickVoiceChips.map((chip, idx) => (
@@ -161,7 +211,7 @@ export function Home() {
                 key={idx}
                 type="button"
                 onClick={() => sendVoiceText(chip)}
-                className="shrink-0 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] text-slate-200 font-medium transition cursor-pointer"
+                className="shrink-0 px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-xs text-slate-700 hover:text-emerald-800 font-medium transition cursor-pointer shadow-2xs"
               >
                 {chip}
               </button>
@@ -169,7 +219,7 @@ export function Home() {
           </div>
         </div>
 
-        {/* Clarification Question (if Munshi asks) */}
+        {/* Clarification Question if Munshi asks */}
         {pendingQuestion && (
           <VoiceQuestion
             question={pendingQuestion}
@@ -179,31 +229,31 @@ export function Home() {
 
         {/* Live Heard Speech Strip */}
         {lastHeard && (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5">
-            <div className="flex items-center justify-between text-[10px] text-slate-400 mb-0.5">
-              <span className="font-semibold text-emerald-400">सुना गया (Heard):</span>
-              <span className="uppercase font-mono text-[9px] bg-slate-800 px-1 rounded text-slate-300">
+          <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-3 shadow-xs">
+            <div className="flex items-center justify-between text-[10px] text-emerald-800 mb-0.5">
+              <span className="font-bold">{t('heardText', language)}:</span>
+              <span className="uppercase font-mono text-[9px] bg-white px-1.5 py-0.5 rounded border border-emerald-200 text-emerald-800 font-bold">
                 {lastHeard.language}
               </span>
             </div>
-            <p className="text-xs font-semibold text-white">"{lastHeard.text}"</p>
+            <p className="text-xs font-bold text-slate-900">"{lastHeard.text}"</p>
           </div>
         )}
 
         {/* Munshi's Spoken Response */}
         {lastResponse && (
-          <div className="bg-slate-900 border border-emerald-900/40 rounded-xl p-3 flex items-start justify-between gap-2">
+          <div className="bg-white border border-slate-200 rounded-2xl p-3.5 flex items-start justify-between gap-2 shadow-xs">
             <div className="flex-1">
-              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wide block mb-0.5">
-                मुंशी का जवाब
+              <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wide block mb-0.5">
+                {t('munshiReply', language)}
               </span>
-              <p className="text-xs font-medium text-slate-100">{lastResponse.say}</p>
+              <p className="text-xs font-semibold text-slate-800">{lastResponse.say}</p>
             </div>
             <button
               type="button"
               onClick={replayAudio}
-              title="उत्तर दोबारा सुनें"
-              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-400 transition cursor-pointer shrink-0"
+              title={t('replayAudio', language)}
+              className="p-2 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-200 text-emerald-700 transition cursor-pointer shrink-0"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
@@ -218,104 +268,73 @@ export function Home() {
             type="text"
             value={typedCommand}
             onChange={(e) => setTypedCommand(e.target.value)}
-            placeholder="यहाँ बोलें या टाइप करें... (उदा. रमेश का 200 उधार)"
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-3 pr-10 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            placeholder={t('typePlaceholder', language)}
+            className="w-full bg-white border border-slate-300 rounded-2xl pl-3.5 pr-10 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 shadow-xs"
           />
           <button
             type="submit"
             disabled={!typedCommand.trim()}
-            className="absolute right-1.5 p-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-30 transition cursor-pointer"
+            className="absolute right-1.5 p-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-30 transition cursor-pointer shadow-xs"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </button>
         </form>
 
         {/* Today's Daily Totals Cards */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <div className="bg-slate-900 border border-emerald-950 rounded-xl p-3">
-            <span className="text-[10px] font-semibold text-emerald-400 block mb-0.5">
-              आज का उधार (Credit)
+        <section className="grid grid-cols-2 gap-2.5">
+          <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs">
+            <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wide block mb-0.5">
+              {t('todayCredit', language)}
             </span>
-            <span className="text-xl font-bold text-white">
+            <span className="text-xl font-black text-slate-900">
               ₹{creditRupees}
             </span>
           </div>
 
-          <div className="bg-slate-900 border border-blue-950 rounded-xl p-3">
-            <span className="text-[10px] font-semibold text-blue-400 block mb-0.5">
-              आज की जमा (Payment)
+          <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs">
+            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide block mb-0.5">
+              {t('todayPayment', language)}
             </span>
-            <span className="text-xl font-bold text-white">
+            <span className="text-xl font-black text-slate-900">
               ₹{paymentRupees}
             </span>
           </div>
-        </div>
+        </section>
 
         {/* Live Recent Ledger Entries Section */}
-        <div className="mt-2 pt-2 border-t border-slate-900">
+        <section className="mt-1 pt-2">
           <div className="flex items-center justify-between mb-1.5">
-            <h2 className="text-xs font-bold text-slate-300">
-              हाल के लेन-देन (Recent Entries)
+            <h2 className="text-xs font-bold text-slate-800">
+              {t('recentEntries', language)}
             </h2>
-            <Link to="/customers" className="text-[11px] text-emerald-400 hover:underline">
-              पूरा खाता देखें →
+            <Link to="/history" className="text-xs font-bold text-emerald-700 hover:underline">
+              {t('viewAllHistory', language)}
             </Link>
           </div>
 
           {recentEntries.length === 0 ? (
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-3 text-center">
-              <p className="text-[11px] text-slate-400">
-                अभी तक कोई लेन-देन दर्ज नहीं हुआ है।
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center shadow-xs">
+              <p className="text-xs text-slate-500 font-medium">
+                {t('noRecentEntries', language)}
               </p>
-              <p className="text-[10px] text-slate-500 mt-0.5">
-                माइक दबाकर बोलिए: "रमेश शर्मा का 340 उधार"
+              <p className="text-[11px] text-slate-400 mt-1">
+                {t('speakSampleHint', language)}
               </p>
             </div>
           ) : (
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               {recentEntries.map((entry) => (
-                <TransactionEntry key={entry.id} entry={entry} />
+                <TransactionEntry key={`home-recent-${entry.id}`} entry={entry} />
               ))}
             </div>
           )}
-        </div>
+        </section>
       </main>
 
-      {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-900 border-t border-slate-800 px-6 py-2.5 flex items-center justify-around z-40">
-        <Link
-          to="/"
-          className="flex flex-col items-center gap-0.5 text-emerald-400"
-        >
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-          </svg>
-          <span className="text-[10px] font-semibold">होम</span>
-        </Link>
-
-        <Link
-          to="/customers"
-          className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-200 transition"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
-          <span className="text-[10px] font-semibold">खाता (Ledger)</span>
-        </Link>
-
-        <Link
-          to="/profile"
-          className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-200 transition"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span className="text-[10px] font-semibold">प्रोफ़ाइल</span>
-        </Link>
-      </nav>
+      {/* Reusable Bottom Navigation Bar */}
+      <Navbar />
     </div>
   )
 }

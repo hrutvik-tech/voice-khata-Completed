@@ -12,6 +12,7 @@ import { api } from '../api/rest'
 export function useVoice() {
   const token = useAppStore((s) => s.token)
   const shop = useAppStore((s) => s.shop)
+  const language = useAppStore((s) => s.language)
   const isOffline = useAppStore((s) => s.isOffline)
   const demoTime = useAppStore((s) => s.demoTime)
   const addCustomer = useAppStore((s) => s.addCustomer)
@@ -120,7 +121,8 @@ export function useVoice() {
           try {
             window.speechSynthesis.cancel()
             const utter = new SpeechSynthesisUtterance(msg.say)
-            utter.lang = shop?.language_mode === 'kn' ? 'kn-IN' : (shop?.language_mode === 'en' ? 'en-IN' : 'hi-IN')
+            const activeLang = language || shop?.language_mode || 'hi'
+            utter.lang = activeLang === 'kn' ? 'kn-IN' : (activeLang === 'en' ? 'en-IN' : 'hi-IN')
             window.speechSynthesis.speak(utter)
           } catch {}
         }
@@ -142,7 +144,8 @@ export function useVoice() {
           try {
             window.speechSynthesis.cancel()
             const utter = new SpeechSynthesisUtterance(msg.say)
-            utter.lang = shop?.language_mode === 'kn' ? 'kn-IN' : (shop?.language_mode === 'en' ? 'en-IN' : 'hi-IN')
+            const activeLang = language || shop?.language_mode || 'hi'
+            utter.lang = activeLang === 'kn' ? 'kn-IN' : (activeLang === 'en' ? 'en-IN' : 'hi-IN')
             utter.onend = () => {
               setOrbState('resting')
             }
@@ -251,7 +254,8 @@ export function useVoice() {
         const rec = new SpeechRec()
         rec.continuous = false
         rec.interimResults = true
-        rec.lang = shop?.language_mode === 'kn' ? 'kn-IN' : (shop?.language_mode === 'en' ? 'en-IN' : 'hi-IN')
+        const activeLang = language || shop?.language_mode || 'hi'
+        rec.lang = activeLang === 'kn' ? 'kn-IN' : (activeLang === 'en' ? 'en-IN' : 'hi-IN')
 
         rec.onresult = (e) => {
           let interimText = ''

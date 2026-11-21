@@ -1,18 +1,22 @@
 import React from 'react'
+import { useAppStore } from '../store/appStore'
+import { t } from '../i18n/translations'
 
 export function VoiceQuestion({ question, onChoice }) {
+  const language = useAppStore((s) => s.language)
+
   if (!question) return null
 
   return (
-    <div className="bg-indigo-950/40 border border-indigo-500/40 rounded-2xl p-4 my-4 shadow-lg backdrop-blur-sm animate-fade-in">
+    <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 my-3 shadow-md animate-fade-in">
       <div className="flex items-center gap-2 mb-2">
-        <span className="w-2.5 h-2.5 rounded-full bg-indigo-400 animate-ping"></span>
-        <span className="text-xs uppercase tracking-wider font-semibold text-indigo-300">
-          स्पष्टीकरण आवश्यक (Clarification Needed)
+        <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-ping"></span>
+        <span className="text-xs uppercase tracking-wider font-bold text-indigo-700">
+          {t('askingQuestion', language)}
         </span>
       </div>
 
-      <p className="text-base font-medium text-slate-100 mb-3">{question.say}</p>
+      <p className="text-sm font-semibold text-slate-900 mb-3">{question.say}</p>
 
       {question.options && question.options.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -21,7 +25,6 @@ export function VoiceQuestion({ question, onChoice }) {
               key={opt.id}
               type="button"
               onClick={() => {
-                // If question is choose_customer, pass customer_id
                 if (question.kind === 'choose_customer') {
                   onChoice({ customer_id: Number(opt.id) })
                 } else if (question.kind === 'confirm_direction') {
@@ -30,7 +33,7 @@ export function VoiceQuestion({ question, onChoice }) {
                   onChoice({ answer: opt.id })
                 }
               }}
-              className="px-4 py-2.5 bg-indigo-600/80 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow transition transform active:scale-95 cursor-pointer"
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs transition transform active:scale-95 cursor-pointer"
             >
               {opt.label}
             </button>

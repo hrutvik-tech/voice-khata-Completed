@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 const TOKEN_KEY = 'bk_token'
 const SHOP_KEY = 'bk_shop'
+const LANG_KEY = 'bk_lang'
 
 const getInitialToken = () => {
   try {
@@ -20,9 +21,27 @@ const getInitialShop = () => {
   }
 }
 
+const getInitialLang = () => {
+  try {
+    const stored = localStorage.getItem(LANG_KEY)
+    if (stored) return stored
+    const rawShop = localStorage.getItem(SHOP_KEY)
+    if (rawShop) {
+      const parsed = JSON.parse(rawShop)
+      if (parsed.language_mode && parsed.language_mode !== 'mix') {
+        return parsed.language_mode
+      }
+    }
+    return 'hi'
+  } catch {
+    return 'hi'
+  }
+}
+
 export const useAppStore = create((set, get) => ({
   token: getInitialToken(),
   shop: getInitialShop(),
+  language: getInitialLang(),
   customers: [],
   recentEntries: [],
   summary: {
@@ -33,6 +52,13 @@ export const useAppStore = create((set, get) => ({
   },
   isOffline: typeof navigator !== 'undefined' ? !navigator.onLine : false,
   demoTime: null, // ISO string or null
+
+  setLanguage: (language) => {
+    try {
+      localStorage.setItem(LANG_KEY, language)
+    } catch {}
+    set({ language })
+  },
 
   setToken: (token) => {
     if (token) {

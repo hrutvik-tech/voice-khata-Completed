@@ -4,6 +4,7 @@ import { useAppStore } from './store/appStore'
 import { Login } from './pages/Login'
 import { Setup } from './pages/Setup'
 import { Home } from './pages/Home'
+import { History } from './pages/History'
 import { Customers } from './pages/Customers'
 import { CustomerProfile } from './pages/CustomerProfile'
 import { ShopProfile } from './pages/ShopProfile'
@@ -41,6 +42,14 @@ export function App() {
           element={
             <ProtectedRoute>
               <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <History />
             </ProtectedRoute>
           }
         />
