@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { useAppStore } from '../store/appStore'
 import { useVoiceStore } from './voiceStore'
 import { VoiceSocket } from './voiceSocket'
@@ -6,7 +6,6 @@ import { FrameTap } from './frameTap'
 import { LocalVad } from './localVad'
 import { WakeWordDetector } from './wakeWord'
 import { AudioPlayer } from './player'
-import { MockVoiceSession } from './mockVoice'
 import { enqueueOfflineTurn, syncOfflineQueue } from './offlineQueue'
 import { api } from '../api/rest'
 
@@ -35,6 +34,8 @@ export function useVoice() {
     setIsAudioPlaying,
   } = useVoiceStore()
 
+  const [micError, setMicError] = useState(null)
+
   const audioContextRef = useRef(null)
   const mediaStreamRef = useRef(null)
   const sourceNodeRef = useRef(null)
@@ -45,7 +46,6 @@ export function useVoice() {
   const vadRef = useRef(null)
   const wakeDetectorRef = useRef(null)
   const playerRef = useRef(null)
-  const mockSessionRef = useRef(null)
 
   const currentTurnIdRef = useRef(null)
   const isRecordingRef = useRef(false)
@@ -60,7 +60,6 @@ export function useVoice() {
       },
       onPlaybackEnded: () => {
         setIsAudioPlaying(false)
-        // If question is pending, stay in 'asking'
         const q = useVoiceStore.getState().pendingQuestion
         setOrbState(q ? 'asking' : 'resting')
       },
@@ -79,7 +78,7 @@ export function useVoice() {
         break
 
       case 'heard':
-        setLastHeard({ text: msg.text, language: msg.language })
+        setLastHeard({ text: msg.text, language: msg.language || 'hi' })
         setOrbState('understanding')
         break
 
@@ -127,7 +126,7 @@ export function useVoice() {
       case 'error':
         setLastResponse({
           kind: msg.type,
-          say: msg.say || 'Error occurred',
+          say: msg.say || 'समझ नहीं आया, दोबारा बोलिए।',
           data: msg,
         })
         setOrbState('speaking')
@@ -191,7 +190,6 @@ export function useVoice() {
     if (!isOffline && socketRef.current?.isConnected) {
       socketRef.current.commitTurn(turnId)
     } else {
-      // Offline enqueue
       if (offlineChunksRef.current.length > 0) {
         const audioBlob = new Blob(offlineChunksRef.current, { type: 'audio/wav' })
         enqueueOfflineTurn(audioBlob, new Date().toISOString(), 'Offline audio')
@@ -247,62 +245,111 @@ export function useVoice() {
     }
   }, [commitTurn, cancelTurn, startTurn, setWakeMode])
 
-  // One-time Microphone & Audio Activation
+  // Robust Microphone & Audio Activation
   const activateAudio = useCallback(async () => {
-    if (audioActive) return true
+    setMicError(null)
 
     try {
+      // 1. Initialize AudioContext without rigid sample rate constraints
       const AudioCtx = window.AudioContext || window.webkitAudioContext
-      const ctx = new AudioCtx({ sampleRate: 16000 })
-      await ctx.resume()
-      audioContextRef.current = ctx
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          sampleRate: 16000,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      })
-      mediaStreamRef.current = stream
-
-      const source = ctx.createMediaStreamSource(stream)
-      sourceNodeRef.current = source
-
-      frameTapRef.current = new FrameTap((frameBuffer) => {
-        if (isRecordingRef.current) {
-          if (!isOffline && socketRef.current?.isConnected) {
-            socketRef.current.sendAudioFrame(frameBuffer)
-          } else {
-            offlineChunksRef.current.push(frameBuffer)
-          }
-        }
-      })
-
-      // ScriptProcessorNode for standard cross-browser support
-      const processor = ctx.createScriptProcessor(2048, 1, 1)
-      processorNodeRef.current = processor
-
-      processor.onaudioprocess = (e) => {
-        const inputData = e.inputBuffer.getChannelData(0)
-        if (isRecordingRef.current) {
-          vadRef.current?.processAudio(inputData)
-          frameTapRef.current?.processFloat32(inputData, ctx.sampleRate)
+      if (AudioCtx) {
+        try {
+          const ctx = new AudioCtx()
+          await ctx.resume()
+          audioContextRef.current = ctx
+        } catch (ctxErr) {
+          console.warn('AudioContext creation fallback:', ctxErr)
         }
       }
 
-      source.connect(processor)
-      processor.connect(ctx.destination)
+      // 2. Request microphone stream with graceful fallbacks
+      let stream = null
+      if (navigator?.mediaDevices?.getUserMedia) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+            },
+          })
+        } catch (err1) {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+          } catch (err2) {
+            console.warn('Microphone permission not granted or device unavailable:', err2)
+            setMicError('माइक अनुमति नहीं मिली। आप टैप करके बोल सकते हैं।')
+          }
+        }
+      } else {
+        console.warn('navigator.mediaDevices is not supported in this browser context.')
+      }
 
+      // 3. Connect audio pipeline if stream is available
+      if (stream && audioContextRef.current) {
+        const ctx = audioContextRef.current
+        mediaStreamRef.current = stream
+
+        const source = ctx.createMediaStreamSource(stream)
+        sourceNodeRef.current = source
+
+        frameTapRef.current = new FrameTap((frameBuffer) => {
+          if (isRecordingRef.current) {
+            if (!isOffline && socketRef.current?.isConnected) {
+              socketRef.current.sendAudioFrame(frameBuffer)
+            } else {
+              offlineChunksRef.current.push(frameBuffer)
+            }
+          }
+        })
+
+        const processor = ctx.createScriptProcessor(2048, 1, 1)
+        processorNodeRef.current = processor
+
+        processor.onaudioprocess = (e) => {
+          const inputData = e.inputBuffer.getChannelData(0)
+          if (isRecordingRef.current) {
+            vadRef.current?.processAudio(inputData)
+            frameTapRef.current?.processFloat32(inputData, ctx.sampleRate)
+          }
+        }
+
+        source.connect(processor)
+        processor.connect(ctx.destination)
+      }
+
+      // Mark audio active so the button dismisses and the orb is ready
       setAudioActive(true)
       return true
     } catch (err) {
-      console.warn('Microphone activation failed or rejected:', err)
-      return false
+      console.warn('General audio activation warning:', err)
+      setAudioActive(true)
+      return true
     }
-  }, [audioActive, isOffline, setAudioActive])
+  }, [setAudioActive, isOffline])
+
+  // Direct Speech / Text Execution (runs full orchestrator on backend)
+  const sendVoiceText = useCallback(async (phrase) => {
+    if (!phrase || !phrase.trim()) return
+
+    setOrbState('understanding')
+    setLastHeard({ text: phrase, language: 'hi' })
+
+    try {
+      const res = await api.debugTurn(phrase, demoTime, null)
+      if (res && res.events) {
+        res.events.forEach(handleServerEvent)
+      }
+    } catch (err) {
+      console.warn('Voice turn error:', err)
+      setLastResponse({
+        kind: 'error',
+        say: 'त्रुटि हुई, कृपया दोबारा बोलिए।',
+        data: err,
+      })
+      setOrbState('speaking')
+    }
+  }, [demoTime, handleServerEvent, setOrbState, setLastHeard, setLastResponse])
 
   // Choice Handler (for clarification questions)
   const handleChoice = useCallback((choice) => {
@@ -313,7 +360,6 @@ export function useVoice() {
     if (!isOffline && socketRef.current?.isConnected) {
       socketRef.current.sendChoice(q.turnId, choice)
     } else {
-      // Offline mock choice
       api.debugChoose(q.turnId, null, choice).then((res) => {
         res.events?.forEach(handleServerEvent)
       })
@@ -323,8 +369,8 @@ export function useVoice() {
   // Trigger manual tap on mic orb
   const handleOrbClick = useCallback(() => {
     if (!audioActive) {
-      activateAudio().then((ok) => {
-        if (ok) startTurn()
+      activateAudio().then(() => {
+        startTurn()
       })
       return
     }
@@ -360,10 +406,12 @@ export function useVoice() {
     audioActive,
     wakeMode,
     wakeStatusMsg,
+    micError,
     activateAudio,
     startTurn,
     commitTurn,
     cancelTurn,
+    sendVoiceText,
     handleChoice,
     handleOrbClick,
     replayAudio,
