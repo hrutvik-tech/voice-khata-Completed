@@ -53,6 +53,9 @@ export function useVoice() {
   const currentTurnIdRef = useRef(null)
   const isRecordingRef = useRef(false)
   const offlineChunksRef = useRef([])
+  const latestSpokenTextRef = useRef('')
+  const turnCompletedRef = useRef(false)
+  const lastProcessedTurnTimeRef = useRef(0)
 
   // Setup Player
   useEffect(() => {
@@ -86,6 +89,7 @@ export function useVoice() {
         break
 
       case 'entry':
+        lastProcessedTurnTimeRef.current = Date.now()
         if (msg.entry) {
           addRecentEntry(msg.entry)
           updateCustomerBalance(msg.entry.customer_id, msg.balance_paise)
@@ -104,6 +108,7 @@ export function useVoice() {
         break
 
       case 'question':
+        lastProcessedTurnTimeRef.current = Date.now()
         setPendingQuestion({
           kind: msg.kind,
           say: msg.say,
@@ -122,6 +127,7 @@ export function useVoice() {
         break
 
       case 'answer':
+        lastProcessedTurnTimeRef.current = Date.now()
         setPendingQuestion(null)
         setLastResponse({
           kind: msg.kind,
@@ -148,6 +154,10 @@ export function useVoice() {
       case 'not_understood':
       case 'not_saved':
       case 'error':
+        // If an entry or answer was recently processed in this turn, ignore dangling STT error
+        if (Date.now() - lastProcessedTurnTimeRef.current < 2500) {
+          return
+        }
         setLastResponse({
           kind: msg.type,
           say: msg.say || 'समझ नहीं आया, दोबारा बोलिए।',
@@ -225,6 +235,8 @@ export function useVoice() {
     const turnId = `turn-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
     currentTurnIdRef.current = turnId
     offlineChunksRef.current = []
+    latestSpokenTextRef.current = ''
+    turnCompletedRef.current = false
 
     setOrbState('listening')
     vadRef.current?.start()
@@ -253,11 +265,18 @@ export function useVoice() {
           }
           const spoken = (finalText || interimText).trim()
           if (spoken) {
+            latestSpokenTextRef.current = spoken
             setLastHeard({ text: spoken, language: shop?.language_mode || 'hi' })
           }
           if (finalText.trim()) {
+            turnCompletedRef.current = true
             isRecordingRef.current = false
             vadRef.current?.stop()
+            try { rec.stop() } catch {}
+            // Cancel websocket turn so backend doesn't race with a failing/stub turn
+            if (!isOffline && socketRef.current?.isConnected) {
+              socketRef.current.cancelTurn(turnId)
+            }
             sendVoiceText(finalText.trim())
           }
         }
@@ -268,6 +287,16 @@ export function useVoice() {
 
         rec.onend = () => {
           recognitionRef.current = null
+          // If recognition ended before finalText was fired, but we heard spoken text:
+          if (!turnCompletedRef.current && latestSpokenTextRef.current && isRecordingRef.current) {
+            turnCompletedRef.current = true
+            isRecordingRef.current = false
+            vadRef.current?.stop()
+            if (!isOffline && socketRef.current?.isConnected) {
+              socketRef.current.cancelTurn(turnId)
+            }
+            sendVoiceText(latestSpokenTextRef.current)
+          }
         }
 
         rec.start()
@@ -295,6 +324,16 @@ export function useVoice() {
     vadRef.current?.stop()
     setOrbState('understanding')
 
+    // If browser speech recognition captured speech, process that directly!
+    if (!turnCompletedRef.current && latestSpokenTextRef.current) {
+      turnCompletedRef.current = true
+      if (!isOffline && socketRef.current?.isConnected) {
+        socketRef.current.cancelTurn(turnId)
+      }
+      sendVoiceText(latestSpokenTextRef.current)
+      return
+    }
+
     if (!isOffline && socketRef.current?.isConnected) {
       socketRef.current.commitTurn(turnId)
     } else {
@@ -304,12 +343,14 @@ export function useVoice() {
       }
       setOrbState('resting')
     }
-  }, [isOffline, setOrbState])
+  }, [isOffline, setOrbState, sendVoiceText])
 
   // Cancel Turn Action
   const cancelTurn = useCallback(() => {
     if (!isRecordingRef.current) return
     isRecordingRef.current = false
+    turnCompletedRef.current = true
+    latestSpokenTextRef.current = ''
     const turnId = currentTurnIdRef.current
 
     if (recognitionRef.current) {
