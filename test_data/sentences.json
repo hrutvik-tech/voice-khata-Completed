@@ -1,0 +1,185 @@
+[
+  {
+    "id": "hi-01",
+    "text": "Ramesh Sharma ka 340 udhaar",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "CREATE_TRANSACTION", "customer_name": "Ramesh Sharma", "amount_paise": 34000, "direction": "credit", "date_expression": null}]
+  },
+  {
+    "id": "hi-02",
+    "text": "Ramesh Sharma ka teen sau chaalis udhaar likh do",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "CREATE_TRANSACTION", "customer_name": "Ramesh Sharma", "amount_paise": 34000, "direction": "credit", "date_expression": null}]
+  },
+  {
+    "id": "hi-03",
+    "text": "Suresh ka 200 udhaar, kal 100 diya tha",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [
+      {"intent": "CREATE_TRANSACTION", "customer_name": "Suresh", "amount_paise": 20000, "direction": "credit", "date_expression": null},
+      {"intent": "CREATE_TRANSACTION", "customer_name": "Suresh", "amount_paise": 10000, "direction": "payment", "date_expression": "kal"}
+    ]
+  },
+  {
+    "id": "hi-04",
+    "text": "Suresh ne saade teen sau diye",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "CREATE_TRANSACTION", "customer_name": "Suresh", "amount_paise": 35000, "direction": "payment", "date_expression": null}]
+  },
+  {
+    "id": "hi-05",
+    "text": "Amit ka dedh hazaar baaki likho",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "CREATE_TRANSACTION", "customer_name": "Amit", "amount_paise": 150000, "direction": "credit", "date_expression": null}]
+  },
+  {
+    "id": "hi-06",
+    "text": "Ramesh Gupta paid three forty",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "CREATE_TRANSACTION", "customer_name": "Ramesh Gupta", "amount_paise": 34000, "direction": "payment", "date_expression": null}]
+  },
+  {
+    "id": "hi-07",
+    "text": "Nahi, 430",
+    "context": {"last_entry": {"id": 1, "customer_id": 1, "customer_name": "Ramesh Sharma", "amount_paise": 34000, "direction": "credit", "recorded_at": "2026-11-21T19:00:00+05:30"}, "pending_question": null},
+    "expected": [{"intent": "CORRECTION", "customer_name": null, "amount_paise": 43000, "direction": null, "date_expression": null}]
+  },
+  {
+    "id": "hi-08",
+    "text": "Pichla hatao",
+    "context": {"last_entry": {"id": 1, "customer_id": 1, "customer_name": "Ramesh Sharma", "amount_paise": 43000, "direction": "credit", "recorded_at": "2026-11-21T19:00:00+05:30"}, "pending_question": null},
+    "expected": [{"intent": "UNDO_LAST", "customer_name": null, "amount_paise": null, "direction": null, "date_expression": null}]
+  },
+  {
+    "id": "hi-09",
+    "text": "Ramesh ka total?",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "QUERY_BALANCE", "customer_name": "Ramesh", "amount_paise": null, "direction": null, "date_expression": null}]
+  },
+  {
+    "id": "hi-10",
+    "text": "Aaj kitna udhaar gaya?",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "QUERY_DAILY_TOTAL", "customer_name": null, "amount_paise": null, "direction": null, "date_expression": null}]
+  },
+  {
+    "id": "hi-11",
+    "text": "Aaj ka hisaab batao",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "QUERY_DAY_SUMMARY", "customer_name": null, "amount_paise": null, "direction": null, "date_expression": null}]
+  },
+  {
+    "id": "hi-12",
+    "text": "Haan",
+    "context": {"last_entry": null, "pending_question": {"kind": "confirm_duplicate", "turn_id": "t1", "options": [{"id": "yes", "label": "Haan"}, {"id": "no", "label": "Nahi"}]}},
+    "expected": [{"intent": "CONFIRM", "customer_name": null, "amount_paise": null, "direction": null, "date_expression": null, "choice": "yes"}]
+  },
+  {
+    "id": "hi-13",
+    "text": "Gupta wale",
+    "context": {"last_entry": null, "pending_question": {"kind": "choose_customer", "turn_id": "t2", "options": [{"id": "1", "label": "Ramesh Sharma"}, {"id": "2", "label": "Ramesh Gupta"}]}},
+    "expected": [{"intent": "CHOOSE_CUSTOMER", "customer_name": null, "amount_paise": null, "direction": null, "date_expression": null, "choice": "Gupta"}]
+  },
+  {
+    "id": "hi-14",
+    "text": "Udhaar",
+    "context": {"last_entry": null, "pending_question": {"kind": "confirm_direction", "turn_id": "t3", "options": [{"id": "credit", "label": "Udhaar"}, {"id": "payment", "label": "Jama"}]}},
+    "expected": [{"intent": "CONFIRM", "customer_name": null, "amount_paise": null, "direction": "credit", "date_expression": null, "choice": "credit"}]
+  },
+  {
+    "id": "hi-15",
+    "text": "Kal mausam achha tha",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "UNKNOWN", "customer_name": null, "amount_paise": null, "direction": null, "date_expression": null}]
+  },
+  {
+    "id": "hi-16",
+    "text": "Suresh ka 200",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "CREATE_TRANSACTION", "customer_name": "Suresh", "amount_paise": 20000, "direction": null, "date_expression": null}]
+  },
+  {
+    "id": "hi-17",
+    "text": "रमेश शर्मा का चार सौ तीस उधार",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "CREATE_TRANSACTION", "customer_name": "Ramesh Sharma", "amount_paise": 43000, "direction": "credit", "date_expression": null}]
+  },
+  {
+    "id": "hi-18",
+    "text": "haan to Ramesh Sharma ka 500 jama kar do",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "CREATE_TRANSACTION", "customer_name": "Ramesh Sharma", "amount_paise": 50000, "direction": "payment", "date_expression": null}]
+  },
+  {
+    "id": "hi-19",
+    "text": "Amit 50 payment",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "CREATE_TRANSACTION", "customer_name": "Amit", "amount_paise": 5000, "direction": "payment", "date_expression": null}]
+  },
+  {
+    "id": "hi-20",
+    "text": "Suresh ka kitna baaki hai?",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "QUERY_BALANCE", "customer_name": "Suresh", "amount_paise": null, "direction": null, "date_expression": null}]
+  },
+  {
+    "id": "kn-01",
+    "text": "Suresh ge nooru roopayi saala",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "CREATE_TRANSACTION", "customer_name": "Suresh", "amount_paise": 10000, "direction": "credit", "date_expression": null}]
+  },
+  {
+    "id": "kn-02",
+    "text": "Suresh 100 kottaru",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "CREATE_TRANSACTION", "customer_name": "Suresh", "amount_paise": 10000, "direction": "payment", "date_expression": null}]
+  },
+  {
+    "id": "kn-03",
+    "text": "Suresh ninne 100 kottaru",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "CREATE_TRANSACTION", "customer_name": "Suresh", "amount_paise": 10000, "direction": "payment", "date_expression": "ninne"}]
+  },
+  {
+    "id": "kn-04",
+    "text": "illa, 430",
+    "context": {"last_entry": {"id": 1, "customer_id": 1, "customer_name": "Ramesh Sharma", "amount_paise": 34000, "direction": "credit", "recorded_at": "2026-11-21T19:00:00+05:30"}, "pending_question": null},
+    "expected": [{"intent": "CORRECTION", "customer_name": null, "amount_paise": 43000, "direction": null, "date_expression": null}]
+  },
+  {
+    "id": "kn-05",
+    "text": "hindinadhu thegedhuhaku",
+    "context": {"last_entry": {"id": 1, "customer_id": 1, "customer_name": "Ramesh Sharma", "amount_paise": 43000, "direction": "credit", "recorded_at": "2026-11-21T19:00:00+05:30"}, "pending_question": null},
+    "expected": [{"intent": "UNDO_LAST", "customer_name": null, "amount_paise": null, "direction": null, "date_expression": null}]
+  },
+  {
+    "id": "kn-06",
+    "text": "Suresh balance eshtu?",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "QUERY_BALANCE", "customer_name": "Suresh", "amount_paise": null, "direction": null, "date_expression": null}]
+  },
+  {
+    "id": "kn-07",
+    "text": "ivattu eshtu saala aayithu?",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "QUERY_DAILY_TOTAL", "customer_name": null, "amount_paise": null, "direction": null, "date_expression": null}]
+  },
+  {
+    "id": "kn-08",
+    "text": "ivattina hisaabu heli",
+    "context": {"last_entry": null, "pending_question": null},
+    "expected": [{"intent": "QUERY_DAY_SUMMARY", "customer_name": null, "amount_paise": null, "direction": null, "date_expression": null}]
+  },
+  {
+    "id": "kn-09",
+    "text": "haudu",
+    "context": {"last_entry": null, "pending_question": {"kind": "confirm_duplicate", "turn_id": "t1", "options": [{"id": "yes", "label": "Haudu"}, {"id": "no", "label": "Illa"}]}},
+    "expected": [{"intent": "CONFIRM", "customer_name": null, "amount_paise": null, "direction": null, "date_expression": null, "choice": "yes"}]
+  },
+  {
+    "id": "kn-10",
+    "text": "saala",
+    "context": {"last_entry": null, "pending_question": {"kind": "confirm_direction", "turn_id": "t2", "options": [{"id": "credit", "label": "Saala"}, {"id": "payment", "label": "Jama"}]}},
+    "expected": [{"intent": "CONFIRM", "customer_name": null, "amount_paise": null, "direction": "credit", "date_expression": null, "choice": "credit"}]
+  }
+]
