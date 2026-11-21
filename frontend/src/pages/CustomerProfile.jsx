@@ -47,27 +47,27 @@ export function CustomerProfile() {
   const owesMoney = balance_paise > 0
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col pb-20 max-w-md mx-auto shadow-2xl">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col pb-20 max-w-md mx-auto shadow-xl border-x border-slate-900">
       <OfflineBanner />
 
       {/* Top Header */}
-      <header className="px-4 pt-4 pb-3 border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between">
-        <Link to="/customers" className="p-2 -ml-2 text-slate-400 hover:text-white transition">
+      <header className="px-4 pt-4 pb-3 border-b border-slate-800 bg-slate-900 sticky top-0 z-30 flex items-center justify-between">
+        <Link to="/customers" className="p-1 -ml-1 text-slate-400 hover:text-white transition">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </Link>
-        <h1 className="text-base font-bold text-white truncate max-w-[200px]">{customer.name}</h1>
+        <h1 className="text-sm font-bold text-white truncate max-w-[200px]">{customer.name}</h1>
         <div className="w-5"></div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 py-4">
+      <main className="flex-1 px-4 py-3">
         {/* Customer Info Card & Balance */}
-        <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-5 shadow-xl mb-6">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-xl font-extrabold text-white">{customer.name}</h2>
+              <h2 className="text-base font-bold text-white">{customer.name}</h2>
               <div className="mt-1 space-y-0.5 text-xs text-slate-400">
                 {customer.area && <p>📍 {customer.area}</p>}
                 {customer.phone && <p>📞 {customer.phone}</p>}
@@ -75,11 +75,11 @@ export function CustomerProfile() {
             </div>
 
             <div className="text-right">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
-                {owesMoney ? 'कुल बाकी (Balance Due)' : 'खाता बराबर'}
+              <span className="text-[10px] uppercase font-semibold text-slate-400 block mb-0.5">
+                {owesMoney ? 'कुल बाकी' : 'खाता बराबर'}
               </span>
               <span
-                className={`text-2xl font-black ${
+                className={`text-xl font-bold ${
                   owesMoney ? 'text-emerald-400' : 'text-slate-400'
                 }`}
               >
@@ -90,18 +90,18 @@ export function CustomerProfile() {
         </div>
 
         {/* Transaction History Section */}
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="text-xs font-bold text-slate-300">
             लेन-देन इतिहास ({entries ? entries.length : 0})
           </h3>
         </div>
 
         {!entries || entries.length === 0 ? (
-          <div className="text-center py-10 rounded-2xl bg-slate-900/40 border border-slate-800">
-            <p className="text-xs text-slate-500">अभी तक कोई लेन-देन नहीं हुआ है</p>
+          <div className="text-center py-8 rounded-xl bg-slate-900 border border-slate-800">
+            <p className="text-xs text-slate-400">अभी तक कोई लेन-देन नहीं हुआ है</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {entries.map((entry) => (
               <TransactionEntry key={entry.id} entry={entry} />
             ))}
@@ -110,23 +110,23 @@ export function CustomerProfile() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-950/95 border-t border-slate-900 px-6 py-2.5 flex items-center justify-around z-40 backdrop-blur-md">
-        <Link to="/" className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition">
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-900 border-t border-slate-800 px-6 py-2.5 flex items-center justify-around z-40">
+        <Link to="/" className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-200 transition">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
           </svg>
           <span className="text-[10px] font-semibold">होम</span>
         </Link>
 
-        <Link to="/customers" className="flex flex-col items-center gap-1 text-emerald-400">
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+        <Link to="/customers" className="flex flex-col items-center gap-0.5 text-emerald-400">
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
-          <span className="text-[10px] font-semibold">ग्राहक खाता</span>
+          <span className="text-[10px] font-semibold">खाता (Ledger)</span>
         </Link>
 
-        <Link to="/profile" className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <Link to="/profile" className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-200 transition">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>

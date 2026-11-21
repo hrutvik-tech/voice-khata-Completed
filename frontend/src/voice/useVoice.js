@@ -11,10 +11,12 @@ import { api } from '../api/rest'
 
 export function useVoice() {
   const token = useAppStore((s) => s.token)
+  const shop = useAppStore((s) => s.shop)
   const isOffline = useAppStore((s) => s.isOffline)
   const demoTime = useAppStore((s) => s.demoTime)
   const addCustomer = useAppStore((s) => s.addCustomer)
   const updateCustomerBalance = useAppStore((s) => s.updateCustomerBalance)
+  const addRecentEntry = useAppStore((s) => s.addRecentEntry)
   const setSummary = useAppStore((s) => s.setSummary)
 
   const {
@@ -46,6 +48,7 @@ export function useVoice() {
   const vadRef = useRef(null)
   const wakeDetectorRef = useRef(null)
   const playerRef = useRef(null)
+  const recognitionRef = useRef(null)
 
   const currentTurnIdRef = useRef(null)
   const isRecordingRef = useRef(false)
@@ -84,6 +87,7 @@ export function useVoice() {
 
       case 'entry':
         if (msg.entry) {
+          addRecentEntry(msg.entry)
           updateCustomerBalance(msg.entry.customer_id, msg.balance_paise)
           if (msg.new_customer) {
             addCustomer({
@@ -95,6 +99,7 @@ export function useVoice() {
               last_activity_at: msg.entry.recorded_at,
             })
           }
+          api.getTodaySummary().then(setSummary).catch(console.warn)
         }
         break
 
@@ -106,6 +111,14 @@ export function useVoice() {
           turnId: msg.turn_id,
         })
         setOrbState('asking')
+        if ('speechSynthesis' in window && msg.say) {
+          try {
+            window.speechSynthesis.cancel()
+            const utter = new SpeechSynthesisUtterance(msg.say)
+            utter.lang = shop?.language_mode === 'kn' ? 'kn-IN' : (shop?.language_mode === 'en' ? 'en-IN' : 'hi-IN')
+            window.speechSynthesis.speak(utter)
+          } catch {}
+        }
         break
 
       case 'answer':
@@ -119,6 +132,17 @@ export function useVoice() {
           setSummary(msg.data)
         }
         setOrbState('speaking')
+        if ('speechSynthesis' in window && msg.say) {
+          try {
+            window.speechSynthesis.cancel()
+            const utter = new SpeechSynthesisUtterance(msg.say)
+            utter.lang = shop?.language_mode === 'kn' ? 'kn-IN' : (shop?.language_mode === 'en' ? 'en-IN' : 'hi-IN')
+            utter.onend = () => {
+              setOrbState('resting')
+            }
+            window.speechSynthesis.speak(utter)
+          } catch {}
+        }
         break
 
       case 'not_understood':
@@ -130,6 +154,15 @@ export function useVoice() {
           data: msg,
         })
         setOrbState('speaking')
+        if ('speechSynthesis' in window && (msg.say || 'समझ नहीं आया')) {
+          try {
+            window.speechSynthesis.cancel()
+            const utter = new SpeechSynthesisUtterance(msg.say || 'समझ नहीं आया')
+            utter.lang = 'hi-IN'
+            utter.onend = () => setOrbState('resting')
+            window.speechSynthesis.speak(utter)
+          } catch {}
+        }
         break
 
       default:
@@ -161,6 +194,29 @@ export function useVoice() {
     }
   }, [token, handleServerEvent])
 
+  // Direct Speech / Text Execution (runs full orchestrator on backend)
+  const sendVoiceText = useCallback(async (phrase) => {
+    if (!phrase || !phrase.trim()) return
+
+    setOrbState('understanding')
+    setLastHeard({ text: phrase, language: shop?.language_mode || 'hi' })
+
+    try {
+      const res = await api.debugTurn(phrase, demoTime, null)
+      if (res && res.events) {
+        res.events.forEach(handleServerEvent)
+      }
+    } catch (err) {
+      console.warn('Voice turn error:', err)
+      setLastResponse({
+        kind: 'error',
+        say: 'त्रुटि हुई, कृपया दोबारा बोलिए।',
+        data: err,
+      })
+      setOrbState('speaking')
+    }
+  }, [demoTime, shop, handleServerEvent, setOrbState, setLastHeard, setLastResponse])
+
   // Start Turn Action
   const startTurn = useCallback(() => {
     if (isRecordingRef.current) return
@@ -173,16 +229,68 @@ export function useVoice() {
     setOrbState('listening')
     vadRef.current?.start()
 
+    // Start Web Speech Recognition if available in the browser
+    const SpeechRec = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition)
+    if (SpeechRec) {
+      try {
+        if (recognitionRef.current) {
+          try { recognitionRef.current.abort() } catch {}
+        }
+        const rec = new SpeechRec()
+        rec.continuous = false
+        rec.interimResults = true
+        rec.lang = shop?.language_mode === 'kn' ? 'kn-IN' : (shop?.language_mode === 'en' ? 'en-IN' : 'hi-IN')
+
+        rec.onresult = (e) => {
+          let interimText = ''
+          let finalText = ''
+          for (let i = 0; i < e.results.length; i++) {
+            if (e.results[i].isFinal) {
+              finalText += e.results[i][0].transcript
+            } else {
+              interimText += e.results[i][0].transcript
+            }
+          }
+          const spoken = (finalText || interimText).trim()
+          if (spoken) {
+            setLastHeard({ text: spoken, language: shop?.language_mode || 'hi' })
+          }
+          if (finalText.trim()) {
+            isRecordingRef.current = false
+            vadRef.current?.stop()
+            sendVoiceText(finalText.trim())
+          }
+        }
+
+        rec.onerror = (err) => {
+          console.warn('Browser SpeechRecognition notice:', err)
+        }
+
+        rec.onend = () => {
+          recognitionRef.current = null
+        }
+
+        rec.start()
+        recognitionRef.current = rec
+      } catch (recErr) {
+        console.warn('SpeechRecognition init notice:', recErr)
+      }
+    }
+
     if (!isOffline && socketRef.current?.isConnected) {
       socketRef.current.startTurn(turnId, demoTime)
     }
-  }, [isOffline, demoTime, setOrbState])
+  }, [isOffline, demoTime, shop, setOrbState, setLastHeard, sendVoiceText])
 
   // Stop Turn Action
   const commitTurn = useCallback(() => {
     if (!isRecordingRef.current) return
     isRecordingRef.current = false
     const turnId = currentTurnIdRef.current
+
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop() } catch {}
+    }
 
     vadRef.current?.stop()
     setOrbState('understanding')
@@ -203,6 +311,10 @@ export function useVoice() {
     if (!isRecordingRef.current) return
     isRecordingRef.current = false
     const turnId = currentTurnIdRef.current
+
+    if (recognitionRef.current) {
+      try { recognitionRef.current.abort() } catch {}
+    }
 
     vadRef.current?.stop()
     setOrbState('resting')
@@ -327,29 +439,6 @@ export function useVoice() {
       return true
     }
   }, [setAudioActive, isOffline])
-
-  // Direct Speech / Text Execution (runs full orchestrator on backend)
-  const sendVoiceText = useCallback(async (phrase) => {
-    if (!phrase || !phrase.trim()) return
-
-    setOrbState('understanding')
-    setLastHeard({ text: phrase, language: 'hi' })
-
-    try {
-      const res = await api.debugTurn(phrase, demoTime, null)
-      if (res && res.events) {
-        res.events.forEach(handleServerEvent)
-      }
-    } catch (err) {
-      console.warn('Voice turn error:', err)
-      setLastResponse({
-        kind: 'error',
-        say: 'त्रुटि हुई, कृपया दोबारा बोलिए।',
-        data: err,
-      })
-      setOrbState('speaking')
-    }
-  }, [demoTime, handleServerEvent, setOrbState, setLastHeard, setLastResponse])
 
   // Choice Handler (for clarification questions)
   const handleChoice = useCallback((choice) => {

@@ -24,6 +24,7 @@ export const useAppStore = create((set, get) => ({
   token: getInitialToken(),
   shop: getInitialShop(),
   customers: [],
+  recentEntries: [],
   summary: {
     business_date: null,
     credit_paise: 0,
@@ -56,7 +57,7 @@ export const useAppStore = create((set, get) => ({
       localStorage.removeItem(TOKEN_KEY)
       localStorage.removeItem(SHOP_KEY)
     } catch {}
-    set({ token: null, shop: null, customers: [], summary: { credit_paise: 0, payment_paise: 0, top: [] } })
+    set({ token: null, shop: null, customers: [], recentEntries: [], summary: { credit_paise: 0, payment_paise: 0, top: [] } })
   },
 
   setCustomers: (customers) => set({ customers }),
@@ -68,6 +69,12 @@ export const useAppStore = create((set, get) => ({
   updateCustomerBalance: (customerId, balancePaise) => set((state) => ({
     customers: state.customers.map((c) => (c.id === customerId ? { ...c, balance_paise: balancePaise } : c)),
   })),
+
+  addRecentEntry: (entry) => set((state) => ({
+    recentEntries: [entry, ...state.recentEntries.filter((e) => e.id !== entry.id)].slice(0, 10),
+  })),
+
+  setRecentEntries: (recentEntries) => set({ recentEntries }),
 
   setSummary: (summary) => set({ summary }),
 

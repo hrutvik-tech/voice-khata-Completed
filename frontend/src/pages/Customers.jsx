@@ -77,16 +77,16 @@ export function Customers() {
   const totalReceivableRupees = (totalReceivablePaise / 100).toLocaleString('en-IN')
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex flex-col pb-24 max-w-md mx-auto shadow-2xl border-x border-slate-900">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col pb-24 max-w-md mx-auto shadow-xl border-x border-slate-900">
       <OfflineBanner />
 
       {/* Top Header */}
-      <header className="px-5 pt-5 pb-3 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-30">
-        <div className="flex items-center justify-between mb-3">
+      <header className="px-4 pt-4 pb-3 border-b border-slate-800 bg-slate-900 sticky top-0 z-30">
+        <div className="flex items-center justify-between mb-2.5">
           <div>
-            <h1 className="text-xl font-extrabold text-white">ग्राहक खाता (Khata)</h1>
+            <h1 className="text-base font-bold text-white">ग्राहक खाता (Ledger)</h1>
             <p className="text-xs text-slate-400 mt-0.5">
-              कुल बकाया (Total Due): <span className="text-emerald-400 font-bold">₹{totalReceivableRupees}</span>
+              कुल बकाया: <span className="text-emerald-400 font-bold">₹{totalReceivableRupees}</span>
             </p>
           </div>
           <button
@@ -96,7 +96,7 @@ export function Customers() {
               setSimilarWarning(null)
               setFormError('')
             }}
-            className="px-3.5 py-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition transform active:scale-95 cursor-pointer flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition active:scale-95 cursor-pointer flex items-center gap-1"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -105,9 +105,9 @@ export function Customers() {
           </button>
         </div>
 
-        {/* Search input with glass style */}
+        {/* Search input */}
         <div className="relative">
-          <svg className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -115,7 +115,7 @@ export function Customers() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="नाम, फ़ोन या मोहल्ला खोजें..."
-            className="w-full bg-slate-900/90 border border-slate-800 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 shadow-inner"
+            className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
       </header>
@@ -239,7 +239,7 @@ export function Customers() {
             <p className="text-xs text-slate-400 mt-1">ऊपर दिए बटन से नया ग्राहक जोड़ें या बोलकर खाता बनाएँ</p>
           </div>
         ) : (
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {customers.map((c) => {
               const balanceRupees = (c.balance_paise / 100).toLocaleString('en-IN')
               const owesMoney = c.balance_paise > 0
@@ -248,17 +248,17 @@ export function Customers() {
                 <Link
                   key={c.id}
                   to={`/customers/${c.id}`}
-                  className="p-4 rounded-2xl bg-gradient-to-r from-slate-900/90 to-slate-900/60 border border-slate-800/80 hover:border-emerald-500/40 flex items-center justify-between transition-all active:scale-[0.98] shadow-md hover:shadow-emerald-950/20 block"
+                  className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-between transition active:scale-98 block shadow-sm"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-slate-800 border border-slate-700/60 flex items-center justify-center text-sm font-bold text-emerald-400">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-emerald-400">
                       {c.name ? c.name[0] : 'G'}
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                      <h3 className="text-xs font-bold text-white flex items-center gap-1">
                         {c.name}
                       </h3>
-                      <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-400">
+                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-400">
                         {c.area && <span>📍 {c.area}</span>}
                         {c.phone && <span>📞 {c.phone}</span>}
                       </div>
@@ -266,11 +266,11 @@ export function Customers() {
                   </div>
 
                   <div className="text-right">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
-                      {owesMoney ? 'बाकी (Due)' : 'बराबर (Clear)'}
+                    <span className="text-[10px] uppercase font-semibold text-slate-400 block mb-0.5">
+                      {owesMoney ? 'बाकी' : 'बराबर'}
                     </span>
                     <span
-                      className={`text-base font-extrabold ${
+                      className={`text-sm font-bold ${
                         owesMoney ? 'text-emerald-400' : 'text-slate-400'
                       }`}
                     >
@@ -285,27 +285,27 @@ export function Customers() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-950/95 border-t border-slate-800/80 px-6 py-3 flex items-center justify-around z-40 backdrop-blur-xl">
-        <Link to="/" className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition">
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-900 border-t border-slate-800 px-6 py-2.5 flex items-center justify-around z-40">
+        <Link to="/" className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-200 transition">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
           </svg>
-          <span className="text-[10px] font-bold">होम (Home)</span>
+          <span className="text-[10px] font-semibold">होम</span>
         </Link>
 
-        <Link to="/customers" className="flex flex-col items-center gap-1 text-emerald-400">
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+        <Link to="/customers" className="flex flex-col items-center gap-0.5 text-emerald-400">
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
-          <span className="text-[10px] font-bold">ग्राहक (Ledger)</span>
+          <span className="text-[10px] font-semibold">खाता (Ledger)</span>
         </Link>
 
-        <Link to="/profile" className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <Link to="/profile" className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-200 transition">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
-          <span className="text-[10px] font-bold">प्रोफ़ाइल (Profile)</span>
+          <span className="text-[10px] font-semibold">प्रोफ़ाइल</span>
         </Link>
       </nav>
     </div>

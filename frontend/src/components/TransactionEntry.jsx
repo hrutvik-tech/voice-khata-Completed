@@ -26,66 +26,71 @@ export function TransactionEntry({ entry }) {
 
   return (
     <div
-      className={`p-3.5 my-2 rounded-xl border flex items-center justify-between transition-all ${
+      className={`p-3 my-2 rounded-xl border flex items-center justify-between transition-all ${
         isUndone
-          ? 'bg-slate-900/40 border-slate-800 opacity-60'
+          ? 'bg-slate-900/60 border-slate-800 opacity-60'
           : isCredit
-          ? 'bg-emerald-950/20 border-emerald-800/40'
-          : 'bg-blue-950/20 border-blue-800/40'
+          ? 'bg-slate-900/90 border-emerald-900/40'
+          : 'bg-slate-900/90 border-blue-900/40'
       }`}
     >
       <div className="flex-1">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {entry.customer_name && (
+            <span className="text-xs font-bold text-white mr-1">
+              {entry.customer_name}
+            </span>
+          )}
+
           <span
-            className={`text-xs px-2 py-0.5 rounded font-medium ${
+            className={`text-[11px] px-2 py-0.5 rounded font-semibold ${
               isCredit
-                ? 'bg-emerald-500/20 text-emerald-300'
-                : 'bg-blue-500/20 text-blue-300'
+                ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/60'
+                : 'bg-blue-950 text-blue-400 border border-blue-800/60'
             }`}
           >
             {isCredit ? 'उधार (Credit)' : 'जमा (Payment)'}
           </span>
 
           {entry.language && (
-            <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
+            <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">
               {entry.language}
             </span>
           )}
 
           {isOffline && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-800/40">
               Offline
             </span>
           )}
 
           {isAmended && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">
-              संशोधित (Amended)
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800/40">
+              संशोधित
             </span>
           )}
 
           {isUndone && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300">
-              रद्द (Undone)
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-rose-950 text-rose-300 border border-rose-800/40">
+              रद्द
             </span>
           )}
         </div>
 
-        <div className="mt-1 text-xs text-slate-400">
+        <div className="mt-1 text-[11px] text-slate-400">
           <span>{entry.business_date || 'आज'}</span>
-          {timeStr && <span className="ml-2">• {timeStr}</span>}
+          {timeStr && <span className="ml-1.5">• {timeStr}</span>}
         </div>
       </div>
 
-      <div className="text-right">
+      <div className="text-right ml-2">
         {oldAmountRupees && (
-          <div className="text-xs text-slate-500 line-through">
+          <div className="text-[11px] text-slate-500 line-through">
             ₹{oldAmountRupees}
           </div>
         )}
         <div
-          className={`text-lg font-bold ${
+          className={`text-base font-extrabold ${
             isUndone
               ? 'text-slate-500 line-through'
               : isCredit
