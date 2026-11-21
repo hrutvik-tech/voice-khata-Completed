@@ -251,8 +251,8 @@ export function Customers() {
                   className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-between transition active:scale-98 block shadow-sm"
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-emerald-400">
-                      {c.name ? c.name[0] : 'G'}
+                    <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-emerald-400 overflow-hidden" translate="no">
+                      {c.name ? c.name.replace(/[^\w\s]/g, '').charAt(0).toUpperCase() || c.name[0] : 'G'}
                     </div>
                     <div>
                       <h3 className="text-xs font-bold text-white flex items-center gap-1">

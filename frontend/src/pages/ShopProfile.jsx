@@ -107,8 +107,8 @@ export function ShopProfile() {
         {/* Owner Details Card */}
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-xl font-bold text-white shadow-md">
-              {shop?.owner_name ? shop.owner_name[0] : 'S'}
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-xl font-bold text-white shadow-md overflow-hidden" translate="no">
+              {shop?.owner_name ? shop.owner_name.replace(/[^\w\s]/g, '').charAt(0).toUpperCase() || shop.owner_name[0] : 'S'}
             </div>
             <div>
               <h2 className="text-base font-bold text-white">{shop?.owner_name || 'Sharma'}</h2>
