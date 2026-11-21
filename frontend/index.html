@@ -10,6 +10,16 @@
     <title>Bolta Khata — बोलता खाता</title>
   </head>
   <body>
+    <script>
+      (function() {
+        try {
+          if (typeof window !== 'undefined' && !navigator.userAgent.includes('jsdom') && !sessionStorage.getItem('bk_splash_shown')) {
+            sessionStorage.setItem('bk_splash_shown', 'true');
+            window.location.replace('splash.html');
+          }
+        } catch (e) {}
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
